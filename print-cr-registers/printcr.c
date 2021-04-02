@@ -14,7 +14,7 @@ static int __init dumb_init(void)
     * has to be used, I use r12.
     */
     __asm__ __volatile__ (
-        "movq %%cr0, %%r12 \n\t"
+        "mov %%cr0, %%r12 \n\t"
         "mov %%r12, %0     \n\t"
         "mov %%cr2, %%r12  \n\t"
         "mov %%r12, %1     \n\t"
