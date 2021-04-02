@@ -48,5 +48,5 @@ def test_all_spaces(words_cnt):
 random.seed(2517)
 test_all_spaces(0)
 for _ in range(100):
-    cnt = random.randint(100, 200)
+    cnt = random.randint(100, 5000)
     test_all_spaces(cnt)

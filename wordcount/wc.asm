@@ -32,16 +32,6 @@ _start:
     mov         rsi, rsp
 
 read_next_buf:
-    ; if (last_char_was_word) {
-    ;   word_count++;
-    ;   last_char_was_word = 0;
-    ; }
-    test        r8, r8
-    jz          .continue_reading
-    inc         r9
-    xor         r8, r8
-
-.continue_reading:
     ; fread(buf, 8192, stdin);
     xor         rax, rax
     xor         rdi, rdi
@@ -59,52 +49,57 @@ read_next_buf:
     ; curr_index = 0;
     xor         rcx, rcx
 
-    ; last_char_was_word = 0;
-    xor         r8,  r8
-
-check_next_char:
+.check_next_char:
     ; if (curr_index == bytes_read)
     ;   goto read_next_buf;
     cmp         rcx, rax
     je          read_next_buf
 
-    ; if (c < 4 || c > 13)
-    ;   goto check_if_32
-    ; else 
+    ; if (c >= 9 && c <= 13)
     ;   goto char_is_space
+    ; else 
+    ;   goto .check_if_32
     mov         bl, byte [rsi + rcx]
     sub         rbx, 9
     cmp         rbx, 4
-    jg          check_if_32         
-    jmp         char_is_space
+    ja          .check_if_32
+    jmp         .char_is_space
 
-check_if_32:
+.check_if_32:
     cmp         rbx, 23
-    jne         char_is_not_space
+    jne         .char_is_not_space
 
-char_is_space:
+.char_is_space:
     ; if (last_char_was_word == true)
     ;   word_count++;
     test        r8, r8
-    jz          after_increment
+    jz          .after_increment
     inc         r9
 
-after_increment:
+.after_increment:
     ; last_char_was_word = 0;
     ; goto loop_end;
     xor         r8, r8 
-    jmp         loop_end
+    jmp         .loop_end
 
-char_is_not_space:
+.char_is_not_space:
     ; last_char_was_word = 1;
     mov         r8, 1
 
-loop_end:
+.loop_end:
     ; curr_index++;
     inc         rcx
-    jmp         check_next_char
+    jmp         .check_next_char
+
 
 quit:
+    ; if (last_char_was_word)
+    ;    word_count++;
+    cmp         r8, 1
+    jne         .after_increment
+    inc         r9
+
+.after_increment:
     ; print_answer()
     call        print_int
     
@@ -112,6 +107,7 @@ quit:
     mov         rax, sys_exit
     xor         rdi, rdi
     syscall     
+
 
 read_error:
     ; print("Read error occured\n");
@@ -121,10 +117,11 @@ read_error:
     mov         rdx, error_msg_len
     syscall
 
-    ; exit()
+    ; exit(1)
     mov         rax, sys_exit
-    xor         rdi, rdi
+    mov         rdi, 1
     syscall
+
 
 print_int:
     ; Allocate char[24] ending with '\n'
@@ -133,7 +130,7 @@ print_int:
     mov         byte [r11], 0x0a
     sub         rsp, 24
 
-    ; r10 is curr len, r12 is const for div,
+    ; r10 is curr len, r12 is just 10,
     ; rax holds curr number of words
     mov         r10, 1
     mov         r12, 10
@@ -161,11 +158,6 @@ print_int:
     jmp         .next_digit
 
 .end:
-    ; Add '\n' to the start of the buffer
-    ; dec         r11
-    ; mov         byte [r11], 0x0a
-    ; inc         r10
-
     ; print("%d", answer);
     mov         rax, sys_write
     mov         rdi, stdout_fileno
