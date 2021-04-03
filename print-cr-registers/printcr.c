@@ -14,14 +14,14 @@ static int __init dumb_init(void)
     * has to be used, I use r12.
     */
     __asm__ __volatile__ (
-        "mov %%cr0, %%r12 \n\t"
+        "mov %%cr0, %%r12  \n\t"
         "mov %%r12, %0     \n\t"
         "mov %%cr2, %%r12  \n\t"
         "mov %%r12, %1     \n\t"
         "mov %%cr3, %%r12  \n\t"
         "mov %%r12, %2     \n\t"
         "mov %%cr4, %%r12  \n\t"
-        "mov %%r12, %2     \n\t"
+        "mov %%r12, %3     \n\t"
 
         : "=m" (cr0), "=m" (cr2), 
           "=m" (cr3), "=m" (cr4)
