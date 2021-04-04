@@ -55,19 +55,21 @@ read_next_buf:
     cmp         rcx, rax
     je          read_next_buf
 
-    ; if (c >= 9 && c <= 13)
-    ;   goto char_is_space
+    ; if (c >= 9 && c <= 13 || c == 32)
+    ;   goto .char_is_space
     ; else 
-    ;   goto .check_if_32
+    ;   goto .char_is_not_space
     mov         bl, byte [rsi + rcx]
     sub         rbx, 9
     cmp         rbx, 4
-    ja          .check_if_32
-    jmp         .char_is_space
-
-.check_if_32:
+    jbe         .char_is_space
     cmp         rbx, 23
-    jne         .char_is_not_space
+    je          .char_is_space
+
+.char_is_not_space:
+    ; last_char_was_word = 1;
+    mov         r8, 1
+    jmp         .loop_end
 
 .char_is_space:
     ; if (last_char_was_word == true)
@@ -78,13 +80,7 @@ read_next_buf:
 
 .after_increment:
     ; last_char_was_word = 0;
-    ; goto loop_end;
     xor         r8, r8 
-    jmp         .loop_end
-
-.char_is_not_space:
-    ; last_char_was_word = 1;
-    mov         r8, 1
 
 .loop_end:
     ; curr_index++;
