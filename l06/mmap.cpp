@@ -21,11 +21,11 @@ int main(int argc, const char* argv[])
             populate = true;
     }
 
-    int page_size = getpagesize();
+    int page_size = sysconf(_SC_PAGESIZE);
     int buf_size = page_size * num_pages;
 
     std::cout << "Allocating " << num_pages << " pages " << num_iterations 
-        << " times (" << buf_size / 1024.0 << " Mb)\n";
+        << " times (" << buf_size / (1024.0 * 1024.0) << " Mb)\n";
 
     for (int i = 0; i < num_iterations; i++) {
         void* buf = mmap(nullptr, buf_size, PROT_READ | PROT_WRITE, 
